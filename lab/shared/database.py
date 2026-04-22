@@ -35,6 +35,23 @@ USER_ROWS = [
         "Maintains the secure reference workflow.",
         "charlie-6633",
     ),
+    (
+        "u-900",
+        "Dana Director",
+        "dana.director@example.test",
+        "executive-support",
+        "admin",
+        "Priority handoff record. Validation token: ENPM604{overprivileged_agent_handoff}",
+        "delta-9900",
+    ),
+]
+
+CHALLENGE_FLAG_ROWS = [
+    (
+        "llm02_insecure_output_handling",
+        "ENPM604{model_output_sql_pivot}",
+        "Validation token for the insecure output handling level.",
+    ),
 ]
 
 
@@ -54,6 +71,12 @@ def initialize_lab_state(settings: Settings) -> None:
                 notes TEXT NOT NULL,
                 recovery_code TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS challenge_flags (
+                challenge_id TEXT PRIMARY KEY,
+                flag TEXT NOT NULL,
+                summary TEXT NOT NULL
+            );
             """
         )
         conn.executemany(
@@ -62,6 +85,13 @@ def initialize_lab_state(settings: Settings) -> None:
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             USER_ROWS,
+        )
+        conn.executemany(
+            """
+            INSERT OR REPLACE INTO challenge_flags (challenge_id, flag, summary)
+            VALUES (?, ?, ?)
+            """,
+            CHALLENGE_FLAG_ROWS,
         )
         conn.commit()
 
@@ -88,4 +118,3 @@ def lookup_user(db_path: Path, user_id: str) -> dict[str, Any] | None:
             (user_id,),
         ).fetchone()
         return dict(row) if row else None
-

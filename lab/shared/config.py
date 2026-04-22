@@ -21,6 +21,8 @@ class Settings:
     llm_backend: str
     openai_api_key: str
     openai_model: str
+    ollama_host: str
+    ollama_model: str
     system_prompt_secret: str
     emergency_token: str
 
@@ -46,6 +48,8 @@ class Settings:
             llm_backend=os.getenv("LLM_BACKEND", "mock"),
             openai_api_key=os.getenv("OPENAI_API_KEY", ""),
             openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
+            ollama_host=os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434"),
+            ollama_model=os.getenv("OLLAMA_MODEL", "llama3.2"),
             system_prompt_secret=os.getenv("LAB_SHARED_SECRET", "MOCK-SYSTEM-PROMPT-KEY"),
             emergency_token=os.getenv("LAB_EMERGENCY_TOKEN", "MOCK-ENV-TOKEN"),
         )

@@ -16,6 +16,13 @@ class OpenAIBackend(LLMBackend):
         self.model = settings.openai_model
 
     def generate_plan(self, planner_input: PlannerInput) -> str:
+        prior_messages = [
+            {
+                "role": "assistant" if turn.role == "assistant" else "user",
+                "content": [{"type": "input_text", "text": turn.content}],
+            }
+            for turn in planner_input.history
+        ]
         response = self.client.responses.create(
             model=self.model,
             input=[
@@ -32,6 +39,7 @@ class OpenAIBackend(LLMBackend):
                         {"type": "input_text", "text": planner_input.system_prompt},
                     ],
                 },
+                *prior_messages,
                 {
                     "role": "user",
                     "content": [

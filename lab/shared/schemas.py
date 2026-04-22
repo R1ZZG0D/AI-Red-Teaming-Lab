@@ -5,11 +5,18 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
+class ConversationTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=8_000)
+
+
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2_000)
+    challenge_id: str | None = None
     user_id: str = Field(default="u-100")
     role: Literal["student", "analyst", "admin"] = "student"
     difficulty: Literal["easy", "medium", "hard"] = "easy"
+    history: list[ConversationTurn] = Field(default_factory=list)
 
 
 class ToolCallRecord(BaseModel):
@@ -31,6 +38,7 @@ class PolicyDecisionRecord(BaseModel):
 class ChatResponse(BaseModel):
     mode: Literal["vulnerable", "secure"]
     answer: str
+    challenge_id: str
     llm_input: dict[str, Any]
     llm_output: Any
     tool_calls: list[ToolCallRecord] = Field(default_factory=list)
@@ -55,3 +63,16 @@ class RetrievedDocument(BaseModel):
     content: str
     score: int
 
+
+class FlagSubmissionRequest(BaseModel):
+    challenge_id: str
+    flag: str = Field(min_length=1, max_length=256)
+
+
+class FlagSubmissionResponse(BaseModel):
+    challenge_id: str
+    correct: bool
+    message: str
+    challenge_level: int
+    total_count: int
+    next_challenge_id: str | None = None

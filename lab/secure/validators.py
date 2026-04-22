@@ -75,6 +75,7 @@ def redact_sensitive_text(text: str, settings: Settings) -> str:
     redacted = redacted.replace(settings.emergency_token, "[REDACTED]")
     redacted = re.sub(r"\b[a-z]+-\d{4}\b", "[REDACTED-RECOVERY-CODE]", redacted, flags=re.IGNORECASE)
     redacted = redacted.replace("sk-lab-demo-key", "[REDACTED]")
+    redacted = re.sub(r"ENPM604\{[A-Za-z0-9_]+\}", "[REDACTED-FLAG]", redacted)
     return redacted
 
 
@@ -86,10 +87,9 @@ def redact_result(result: Any, settings: Settings) -> Any:
     if isinstance(result, dict):
         redacted = {}
         for key, value in result.items():
-            if key == "recovery_code":
+            if key in {"recovery_code", "flag"}:
                 redacted[key] = "[REDACTED]"
             else:
                 redacted[key] = redact_result(value, settings)
         return redacted
     return result
-

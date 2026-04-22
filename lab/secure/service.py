@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from lab.shared.challenges import hint_for_difficulty
+from lab.shared.challenges import challenge_by_id, hint_for_difficulty
 from lab.shared.config import Settings
 from lab.shared.llm import build_llm_backend
 from lab.shared.logging_utils import log_event
@@ -22,6 +22,7 @@ class SecureLabService:
         self.tool_executor = SecureToolExecutor(settings)
 
     def handle_chat(self, request: ChatRequest) -> ChatResponse:
+        challenge = challenge_by_id(request.challenge_id)
         raw_documents = (
             retrieve_documents(self.settings.documents_dir, request.message)
             if should_retrieve_documents(request.message)
@@ -67,6 +68,7 @@ class SecureLabService:
             return ChatResponse(
                 mode="secure",
                 answer=answer,
+                challenge_id=challenge.id,
                 llm_input=llm_input,
                 llm_output={"raw_output": raw_output, "validation_error": validation_error},
                 tool_calls=tool_records,
@@ -178,6 +180,7 @@ class SecureLabService:
         return ChatResponse(
             mode="secure",
             answer=answer,
+            challenge_id=challenge.id,
             llm_input=llm_input,
             llm_output=plan.model_dump(),
             tool_calls=tool_records,

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body data-mode="{{ mode }}" data-view="debug">
+    <header class="topbar debug-topbar">
+      <div>
+        <p class="brand-kicker">Instructor / Debug</p>
+        <h1 class="brand-title">{{ title }}</h1>
+      </div>
+      <nav class="mode-switch" aria-label="Navigation">
+        <a class="mode-pill" href="{{ student_path }}">Student View</a>
+        <a class="mode-pill" href="{{ peer_path }}/debug">Other Mode Debug</a>
+      </nav>
+    </header>
+
+    <main class="debug-shell">
+      <section class="panel debug-form-panel">
+        <h2>Debug Request</h2>
+        <form id="debug-form">
+          <label>
+            Challenge
+            <select id="debug-challenge"></select>
+          </label>
+          <label>
+            Prompt
+            <textarea id="debug-message" rows="6" required></textarea>
+          </label>
+          <button type="submit">Run Request</button>
+        </form>
+      </section>
+
+      <section class="panel debug-trace-panel">
+        <h2>Response</h2>
+        <div class="debug-section">
+          <h3>Answer</h3>
+          <pre id="debug-answer">Waiting for input...</pre>
+        </div>
+        <div class="debug-grid">
+          <div class="debug-section">
+            <h3>LLM Input</h3>
+            <pre id="debug-llm-input">{}</pre>
+          </div>
+          <div class="debug-section">
+            <h3>LLM Output</h3>
+            <pre id="debug-llm-output">{}</pre>
+          </div>
+          <div class="debug-section">
+            <h3>Tool Calls</h3>
+            <pre id="debug-tool-calls">[]</pre>
+          </div>
+          <div class="debug-section">
+            <h3>Policy Decisions</h3>
+            <pre id="debug-policy-decisions">[]</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      window.labConfig = {
+        mode: "{{ mode }}",
+        routePath: "{{ route_path }}",
+        defaultChallengeId: "{{ default_challenge_id }}",
+        challenges: {{ challenges|tojson }},
+      };
+    </script>
+    <script src="{{ url_for('static', path='debug.js') }}"></script>
+  </body>
+</html>

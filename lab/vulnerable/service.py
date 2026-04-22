@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from lab.shared.challenges import hint_for_difficulty
+from lab.shared.challenges import challenge_by_id, hint_for_difficulty
 from lab.shared.config import Settings
 from lab.shared.llm import build_llm_backend
 from lab.shared.logging_utils import log_event
@@ -18,6 +18,7 @@ class VulnerableLabService:
         self.tool_executor = VulnerableToolExecutor(settings)
 
     def handle_chat(self, request: ChatRequest) -> ChatResponse:
+        challenge = challenge_by_id(request.challenge_id)
         documents = (
             retrieve_documents(self.settings.documents_dir, request.message)
             if should_retrieve_documents(request.message)
@@ -52,14 +53,11 @@ class VulnerableLabService:
             tool_calls=tool_records,
             fallback=summarize_documents(documents),
         )
-        if any(keyword in request.message.lower() for keyword in ["system prompt", "prompt", "secret", "token"]):
-            answer = (
-                f"{answer}\n\nSystem prompt snapshot:\n{llm_input['combined_prompt'][:500]}"
-            )
 
         return ChatResponse(
             mode="vulnerable",
             answer=answer,
+            challenge_id=challenge.id,
             llm_input=llm_input,
             llm_output=parsed_output,
             tool_calls=tool_records,

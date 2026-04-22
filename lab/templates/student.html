@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body data-mode="{{ mode }}" data-view="student">
+    <header class="topbar">
+      <div>
+        <p class="brand-kicker">ENPM604 Graduate Lab</p>
+        <h1 class="brand-title">AI Red Teaming CTF</h1>
+      </div>
+      <nav class="mode-switch" aria-label="Environment switcher">
+        <a class="mode-pill {% if route_path == '/vuln' %}active{% endif %}" href="/vuln">Vulnerable</a>
+        <a class="mode-pill {% if route_path == '/secure' %}active{% endif %}" href="/secure">Secure</a>
+      </nav>
+    </header>
+
+    <main class="student-shell">
+      <section class="mission-panel panel">
+        <div class="panel-head">
+          <span class="panel-label">{{ mode|upper }} ENVIRONMENT</span>
+          <span class="flag-format">Flag format: {{ flag_format }}</span>
+        </div>
+
+        <div class="level-track" id="level-track"></div>
+
+        <div class="challenge-summary">
+          <p class="challenge-meta" id="challenge-meta"></p>
+          <h2 id="challenge-title">Loading challenge...</h2>
+          <p class="challenge-brief" id="challenge-brief"></p>
+          <div class="mission-block">
+            <h3>Objective</h3>
+            <p id="challenge-objective"></p>
+          </div>
+          <div class="mission-block">
+            <h3>Success Condition</h3>
+            <p id="challenge-success"></p>
+          </div>
+        </div>
+
+        <div class="hint-block">
+          <div class="hint-header">
+            <h3>Hints</h3>
+            <button id="reveal-hint" type="button" class="secondary-button">Reveal Next Hint</button>
+          </div>
+          <ol id="hint-list" class="hint-list"></ol>
+        </div>
+
+        <form id="flag-form" class="flag-form">
+          <label for="flag-input">Submit Flag</label>
+          <div class="flag-row">
+            <input id="flag-input" name="flag" autocomplete="off" placeholder="ENPM604{...}" required />
+            <button type="submit">Submit</button>
+          </div>
+          <p id="flag-feedback" class="feedback muted">Solve the challenge, recover the flag, and submit it here.</p>
+        </form>
+
+        <div class="progress-block">
+          <div class="progress-copy">
+            <span>Progress</span>
+            <span id="progress-text">0 / {{ total_challenges }}</span>
+          </div>
+          <div class="progress-bar">
+            <div id="progress-fill"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="terminal-panel panel">
+        <div class="terminal-shell">
+          <div class="terminal-top">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <div class="terminal-title">{{ title }}</div>
+            <button id="reset-context" type="button" class="ghost-button">Reset Context</button>
+          </div>
+
+          <div id="transcript" class="transcript" aria-live="polite"></div>
+
+          <form id="chat-form" class="chat-form">
+            <textarea id="message" name="message" rows="3" required></textarea>
+            <div class="composer-row">
+              <p class="composer-note">The model response is the point of the challenge. No starter prompts are provided.</p>
+              <button type="submit" id="send-button">Send</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      window.labConfig = {
+        mode: "{{ mode }}",
+        routePath: "{{ route_path }}",
+        flagFormat: "{{ flag_format }}",
+        defaultChallengeId: "{{ default_challenge_id }}",
+        totalChallenges: {{ total_challenges }},
+        challenges: {{ challenges|tojson }},
+      };
+    </script>
+    <script src="{{ url_for('static', path='app.js') }}"></script>
+  </body>
+</html>
+

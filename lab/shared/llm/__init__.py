@@ -10,4 +10,8 @@ def build_llm_backend(settings: Settings) -> LLMBackend:
         from lab.shared.llm.openai_backend import OpenAIBackend
 
         return OpenAIBackend(settings)
+    if settings.llm_backend == "ollama":
+        from lab.shared.llm.ollama_backend import OllamaBackend
+
+        return OllamaBackend(settings)
     return MockLLMBackend(settings)
