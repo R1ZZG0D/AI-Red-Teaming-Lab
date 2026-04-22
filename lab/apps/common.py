@@ -28,9 +28,9 @@ def create_lab_app(settings: Settings, route_path: str, service: object) -> Fast
     @app.get(route_path, response_class=HTMLResponse)
     def render_ui(request: Request) -> HTMLResponse:
         return templates.TemplateResponse(
+            request,
             "index.html",
             {
-                "request": request,
                 "mode": settings.app_mode,
                 "title": settings.app_name,
                 "route_path": route_path,
@@ -51,4 +51,3 @@ def create_lab_app(settings: Settings, route_path: str, service: object) -> Fast
         return {"status": "ok", "mode": settings.app_mode}
 
     return app
-
