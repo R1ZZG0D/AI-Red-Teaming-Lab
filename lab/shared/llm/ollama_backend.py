@@ -53,7 +53,7 @@ class OllamaBackend(LLMBackend):
         try:
             with request.urlopen(req, timeout=90.0) as response:
                 body = json.loads(response.read().decode("utf-8"))
-        except error.URLError as exc:
+        except (error.URLError, error.HTTPError, TimeoutError, json.JSONDecodeError):
             return self.fallback.generate_plan(planner_input)
 
         message = body.get("message", {})

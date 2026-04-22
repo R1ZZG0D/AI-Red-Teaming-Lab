@@ -13,7 +13,7 @@ The lab now runs as a four-level CTF. Students interact with the assistant, reco
 - Starter prompts are not exposed in the UI.
 - Raw LLM traces moved to instructor-only debug routes.
 - Four challenge levels map directly to four OWASP LLM Top 10 risks.
-- Optional `ollama` backend support was added alongside the deterministic `mock` backend.
+- Ollama is now the default backend, with deterministic fallback behavior if Ollama is unavailable.
 - Direct "give me the flag" style prompts, reverse-order tricks, and story/song bypasses are intentionally resisted.
 
 ## Challenge Map
@@ -104,19 +104,19 @@ The debug pages expose LLM input, LLM output, tool calls, and policy decisions. 
 
 ### Docker
 
-Default run with the deterministic challenge engine:
+Default run with Ollama-first behavior:
 
 ```bash
 docker compose up --build
 ```
 
-To use the interactive Ollama path inside Docker:
+Then pull the model once inside the Ollama service:
 
 ```bash
-docker compose up -d ollama
 docker compose exec ollama ollama pull llama3.2
-LLM_BACKEND=ollama docker compose up --build
 ```
+
+After the model is present, the lab will use Ollama by default. If Ollama is unavailable or the model has not been pulled yet, the lab falls back to the deterministic challenge engine so the environments still run.
 
 ### Local Python
 
@@ -168,7 +168,7 @@ export OLLAMA_HOST=http://127.0.0.1:11434
 export OLLAMA_MODEL=llama3.2
 ```
 
-Inside Docker Compose, the lab defaults to `http://ollama:11434`. If the Ollama service is unavailable or does not return structured JSON, the lab falls back to the deterministic challenge engine so the exercises still run.
+Inside Docker Compose, the lab defaults to `http://ollama:11434`. If the Ollama service is unavailable, the model is missing, or the reply is not valid structured output, the lab falls back to the deterministic challenge engine so the exercises still run.
 
 ## Student Workflow
 
@@ -293,5 +293,6 @@ python3 scripts/grade_lab.py
 ## Notes
 
 - All secrets, users, and flags are mock data for teaching only.
-- The `mock` backend is best for stable classroom outcomes.
-- `ollama` and `openai` are optional if you want live model behavior instead of deterministic scripted behavior.
+- `ollama` is now the default path for a more interactive model feel.
+- `mock` is still available when you want stable classroom outcomes or grading.
+- `openai` remains optional if you want a hosted model instead.

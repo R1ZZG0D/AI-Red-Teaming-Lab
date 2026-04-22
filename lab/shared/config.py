@@ -45,7 +45,7 @@ class Settings:
             db_path=Path(os.getenv("LAB_DB_PATH", str(data_dir / "lab.db"))),
             secrets_file=Path(os.getenv("LAB_SECRETS_FILE", str(data_dir / "secrets.txt"))),
             log_dir=BASE_DIR / "logs",
-            llm_backend=os.getenv("LLM_BACKEND", "mock"),
+            llm_backend=os.getenv("LLM_BACKEND", "ollama"),
             openai_api_key=os.getenv("OPENAI_API_KEY", ""),
             openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
             ollama_host=os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434"),
