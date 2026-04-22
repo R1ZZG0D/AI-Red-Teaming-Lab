@@ -1,0 +1,193 @@
+:root {
+  --bg: #f4efe3;
+  --panel: rgba(255, 252, 246, 0.9);
+  --ink: #172121;
+  --muted: #5d6b6b;
+  --accent: #aa3a2a;
+  --accent-soft: #e6c3b3;
+  --line: rgba(23, 33, 33, 0.12);
+  --shadow: 0 20px 40px rgba(57, 45, 34, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(170, 58, 42, 0.18), transparent 35%),
+    linear-gradient(180deg, #f9f6ef 0%, var(--bg) 100%);
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+}
+
+.shell {
+  width: min(1280px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 3rem;
+}
+
+.hero {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+}
+
+.lede {
+  max-width: 70ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1.05fr 1.3fr 0.9fr;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  backdrop-filter: blur(12px);
+}
+
+.panel h2,
+.trace-section h3 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.9rem;
+  font-size: 0.95rem;
+}
+
+textarea,
+input,
+select,
+button {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(23, 33, 33, 0.16);
+  font: inherit;
+}
+
+textarea,
+input,
+select {
+  margin-top: 0.35rem;
+  padding: 0.8rem 0.9rem;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+button {
+  cursor: pointer;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, #202f2f, #aa3a2a);
+  color: white;
+  border: none;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.presets {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.preset {
+  background: #f4d9cb;
+  color: var(--ink);
+}
+
+.hint-box {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  background: rgba(170, 58, 42, 0.08);
+  color: #6d2c22;
+}
+
+.trace-section {
+  margin-bottom: 1rem;
+}
+
+pre {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 16px;
+  background: #181f1f;
+  color: #f6eee5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  line-height: 1.45;
+  font-family: "SFMono-Regular", "Menlo", monospace;
+}
+
+.challenge-list {
+  margin: 0;
+  padding-left: 0;
+}
+
+.challenge-list li {
+  margin-bottom: 1rem;
+  list-style: none;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(23, 33, 33, 0.08);
+}
+
+.difficulty {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--accent);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.challenge-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.category {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.challenge-launch {
+  margin-top: 0.75rem;
+  background: linear-gradient(135deg, #324544, #7f3327);
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

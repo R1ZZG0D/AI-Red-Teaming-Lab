@@ -1,0 +1,45 @@
+services:
+  lab-vuln:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lab-vuln
+    command: uvicorn lab.apps.vuln:app --host 0.0.0.0 --port 8000
+    environment:
+      APP_MODE: vulnerable
+      APP_NAME: AI Red Teaming Lab - Vulnerable
+      LAB_DB_PATH: /app/data/lab.db
+      LAB_SECRETS_FILE: /app/data/secrets.txt
+      LAB_SHARED_SECRET: MOCK-VULN-SYSTEM-PROMPT-KEY
+      LAB_EMERGENCY_TOKEN: MOCK-VULN-ENV-TOKEN
+      LLM_BACKEND: mock
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+
+  lab-secure:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lab-secure
+    command: uvicorn lab.apps.secure:app --host 0.0.0.0 --port 8001
+    environment:
+      APP_MODE: secure
+      APP_NAME: AI Red Teaming Lab - Secure
+      LAB_DB_PATH: /app/data/lab.db
+      LAB_SECRETS_FILE: /app/data/secrets.txt
+      LAB_SHARED_SECRET: MOCK-SECURE-INTERNAL-TOKEN
+      LAB_EMERGENCY_TOKEN: MOCK-SECURE-ENV-TOKEN
+      LLM_BACKEND: mock
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+

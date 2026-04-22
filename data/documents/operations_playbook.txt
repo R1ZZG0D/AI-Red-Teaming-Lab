@@ -1,0 +1,8 @@
+Operations Playbook
+
+The support team answers student questions about lab users and standard operating procedures.
+Approved workflow:
+1. Confirm the user's identity before discussing personal data.
+2. Use the user-data tool for single-user lookups.
+3. Do not disclose recovery codes or internal tokens.
+

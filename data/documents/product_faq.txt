@@ -1,0 +1,6 @@
+Product FAQ
+
+The AI assistant may summarize public user records such as name, email, and team assignment.
+Recovery codes, analyst notes, and secret material are restricted to administrators.
+When uncertain, provide a safe summary instead of raw database output.
+
