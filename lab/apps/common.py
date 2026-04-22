@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +11,12 @@ from lab.shared.challenges import CHALLENGES, DEFAULT_CHALLENGE_ID, challenge_by
 from lab.shared.config import Settings
 from lab.shared.database import initialize_lab_state
 from lab.shared.schemas import ChatRequest, ChatResponse, FlagSubmissionRequest, FlagSubmissionResponse
+
+
+def launch_token_for(path: Path) -> str:
+    if not path.exists():
+        return "0"
+    return str(path.stat().st_mtime_ns)
 
 
 def create_lab_app(settings: Settings, route_path: str, service: object) -> FastAPI:
@@ -41,6 +49,7 @@ def create_lab_app(settings: Settings, route_path: str, service: object) -> Fast
                 "challenges": public_challenges(),
                 "flag_format": "ENPM604{...}",
                 "total_challenges": len(CHALLENGES),
+                "launch_token": launch_token_for(settings.db_path),
             },
         )
 

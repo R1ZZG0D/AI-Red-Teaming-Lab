@@ -1,6 +1,6 @@
 const config = window.labConfig;
 
-const STORAGE_KEY = "enpm604-lab-state-v2";
+const STORAGE_KEY = `enpm604-lab-state-v3-${config.launchToken || "default"}`;
 const MAX_TRANSCRIPT_TURNS = 18;
 
 const challenges = [...config.challenges].sort((left, right) => left.level - right.level);
