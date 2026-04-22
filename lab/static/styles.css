@@ -149,7 +149,6 @@ button {
 .panel-label,
 .flag-format,
 .challenge-meta,
-.composer-note,
 .turn-label,
 .progress-copy,
 .feedback,
@@ -515,13 +514,6 @@ button {
 
 .composer-row {
   margin-top: 0.8rem;
-}
-
-.composer-note {
-  margin: 0;
-  max-width: 40ch;
-  font-size: 0.9rem;
-  line-height: 1.5;
 }
 
 .chat-form button {

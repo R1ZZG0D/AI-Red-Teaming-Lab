@@ -56,7 +56,7 @@ def create_lab_app(settings: Settings, route_path: str, service: object) -> Fast
                 "peer_path": peer_path,
                 "student_path": route_path,
                 "default_challenge_id": DEFAULT_CHALLENGE_ID,
-                "challenges": public_challenges(),
+                "challenges": public_challenges(include_prompt_placeholder=True),
                 "flag_format": "ENPM604{...}",
             },
         )

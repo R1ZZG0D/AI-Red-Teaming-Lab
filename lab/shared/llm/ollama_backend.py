@@ -5,6 +5,7 @@ from urllib import error, request
 
 from lab.shared.config import Settings
 from lab.shared.llm.base import LLMBackend, PlannerInput
+from lab.shared.llm.mock_backend import MockLLMBackend
 
 
 class OllamaBackend(LLMBackend):
@@ -13,6 +14,7 @@ class OllamaBackend(LLMBackend):
     def __init__(self, settings: Settings) -> None:
         self.host = settings.ollama_host.rstrip("/")
         self.model = settings.ollama_model
+        self.fallback = MockLLMBackend(settings)
 
     def generate_plan(self, planner_input: PlannerInput) -> str:
         transcript = [
@@ -39,6 +41,7 @@ class OllamaBackend(LLMBackend):
                 "model": self.model,
                 "messages": messages,
                 "stream": False,
+                "format": "json",
             }
         ).encode("utf-8")
         req = request.Request(
@@ -51,22 +54,10 @@ class OllamaBackend(LLMBackend):
             with request.urlopen(req, timeout=90.0) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except error.URLError as exc:
-            return json.dumps(
-                {
-                    "rationale": f"Ollama request failed: {exc}",
-                    "final_answer": "The Ollama backend is unavailable.",
-                    "tool_calls": [],
-                }
-            )
+            return self.fallback.generate_plan(planner_input)
 
         message = body.get("message", {})
         content = message.get("content", "")
-        if content:
+        if content and content.lstrip().startswith("{"):
             return content
-        return json.dumps(
-            {
-                "rationale": "Ollama did not return assistant content.",
-                "final_answer": "No usable plan was returned.",
-                "tool_calls": [],
-            }
-        )
+        return self.fallback.generate_plan(planner_input)

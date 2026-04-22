@@ -25,8 +25,8 @@ class ChallengeDefinition:
     default_role: UserRole
     prompt_placeholder: str
 
-    def public_payload(self) -> dict[str, object]:
-        return {
+    def public_payload(self, include_prompt_placeholder: bool = False) -> dict[str, object]:
+        payload = {
             "id": self.id,
             "level": self.level,
             "title": self.title,
@@ -39,8 +39,10 @@ class ChallengeDefinition:
             "hints": list(self.hints),
             "default_user_id": self.default_user_id,
             "default_role": self.default_role,
-            "prompt_placeholder": self.prompt_placeholder,
         }
+        if include_prompt_placeholder:
+            payload["prompt_placeholder"] = self.prompt_placeholder
+        return payload
 
 
 CHALLENGES: tuple[ChallengeDefinition, ...] = (
@@ -148,8 +150,8 @@ def challenge_by_id(challenge_id: str | None) -> ChallengeDefinition:
     return CHALLENGE_INDEX[DEFAULT_CHALLENGE_ID]
 
 
-def public_challenges() -> list[dict[str, object]]:
-    return [challenge.public_payload() for challenge in CHALLENGES]
+def public_challenges(include_prompt_placeholder: bool = False) -> list[dict[str, object]]:
+    return [challenge.public_payload(include_prompt_placeholder) for challenge in CHALLENGES]
 
 
 def hint_for_difficulty(difficulty: str) -> str:
@@ -164,4 +166,3 @@ def hint_for_difficulty(difficulty: str) -> str:
 def validate_flag(challenge_id: str, submitted_flag: str) -> bool:
     challenge = challenge_by_id(challenge_id)
     return challenge.flag == submitted_flag.strip()
-

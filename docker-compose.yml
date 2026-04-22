@@ -1,10 +1,20 @@
 services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: lab-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
   lab-vuln:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: lab-vuln
     command: uvicorn lab.apps.vuln:app --host 0.0.0.0 --port 8000
+    depends_on:
+      - ollama
     environment:
       APP_MODE: vulnerable
       APP_NAME: AI Red Teaming Lab - Vulnerable
@@ -15,7 +25,7 @@ services:
       LLM_BACKEND: ${LLM_BACKEND:-mock}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
-      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
     ports:
       - "8000:8000"
@@ -29,6 +39,8 @@ services:
       dockerfile: Dockerfile
     container_name: lab-secure
     command: uvicorn lab.apps.secure:app --host 0.0.0.0 --port 8001
+    depends_on:
+      - ollama
     environment:
       APP_MODE: secure
       APP_NAME: AI Red Teaming Lab - Secure
@@ -39,10 +51,13 @@ services:
       LLM_BACKEND: ${LLM_BACKEND:-mock}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
-      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
     ports:
       - "8001:8001"
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+
+volumes:
+  ollama-data:

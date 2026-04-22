@@ -188,7 +188,7 @@ function renderChallengeSummary() {
   elements.challengeBrief.textContent = challenge.brief;
   elements.challengeObjective.textContent = challenge.objective;
   elements.challengeSuccess.textContent = challenge.success_condition;
-  elements.message.placeholder = challenge.prompt_placeholder;
+  elements.message.placeholder = "";
 
   if (solved) {
     setFeedback("Flag captured for this level. You can keep probing or move to the next unlocked level.", "success");

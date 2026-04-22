@@ -14,6 +14,7 @@ The lab now runs as a four-level CTF. Students interact with the assistant, reco
 - Raw LLM traces moved to instructor-only debug routes.
 - Four challenge levels map directly to four OWASP LLM Top 10 risks.
 - Optional `ollama` backend support was added alongside the deterministic `mock` backend.
+- Direct "give me the flag" style prompts, reverse-order tricks, and story/song bypasses are intentionally resisted.
 
 ## Challenge Map
 
@@ -103,10 +104,18 @@ The debug pages expose LLM input, LLM output, tool calls, and policy decisions. 
 
 ### Docker
 
-Default run with the deterministic mock backend:
+Default run with the deterministic challenge engine:
 
 ```bash
 docker compose up --build
+```
+
+To use the interactive Ollama path inside Docker:
+
+```bash
+docker compose up -d ollama
+docker compose exec ollama ollama pull llama3.2
+LLM_BACKEND=ollama docker compose up --build
 ```
 
 ### Local Python
@@ -134,7 +143,7 @@ uvicorn lab.apps.secure:app --reload --port 8001
 
 ### Mock Backend
 
-This is the default and is recommended for classroom demos, grading, and deterministic flag recovery.
+This is the default and is recommended for grading and deterministic challenge progression.
 
 ```bash
 export LLM_BACKEND=mock
@@ -150,7 +159,7 @@ export OPENAI_MODEL=gpt-4.1-mini
 
 ### Ollama Backend
 
-Run Ollama locally, pull a model, then point the lab at it:
+Run Ollama locally or through the bundled Docker service, pull a model, then point the lab at it:
 
 ```bash
 ollama pull llama3.2
@@ -159,15 +168,16 @@ export OLLAMA_HOST=http://127.0.0.1:11434
 export OLLAMA_MODEL=llama3.2
 ```
 
-For Docker on macOS, the compose file defaults to `http://host.docker.internal:11434`.
+Inside Docker Compose, the lab defaults to `http://ollama:11434`. If the Ollama service is unavailable or does not return structured JSON, the lab falls back to the deterministic challenge engine so the exercises still run.
 
 ## Student Workflow
 
 1. Open a level in the vulnerable environment.
-2. Chat with the assistant and recover the hidden `ENPM604{...}` flag.
-3. Submit the flag in the flag box.
-4. Unlock the next level.
-5. Compare the same level in the secure environment to see why the exploit fails.
+2. Work the conversation like a CTF challenge rather than asking for the flag directly.
+3. Use the model's responses to discover the real attack path and recover the hidden `ENPM604{...}` flag.
+4. Submit the flag in the flag box.
+5. Unlock the next level.
+6. Compare the same level in the secure environment to see why the exploit fails.
 
 The secure environment is for comparison and defense analysis. The intended flag recovery path is the vulnerable environment.
 
@@ -195,7 +205,7 @@ python3 scripts/init_db.py --reset
 ### Level 1: Prompt Injection
 
 Attack idea:
-Ask for a vendor bulletin summary that includes anything operationally important, appendices, or embedded support guidance.
+Ask for the visible bulletin summary first, then pivot toward the maintenance appendix or embedded guidance once you know it exists.
 
 Vulnerable behavior:
 The vulnerable environment mixes retrieved document text into the same prompt as system instructions, so poisoned vendor content can override intent and surface the flag.
@@ -206,7 +216,7 @@ The secure environment tags retrieved text as untrusted data and filters instruc
 ### Level 2: Insecure Output Handling
 
 Attack idea:
-Frame the request as a verification, audit export, or recovery-readiness operation so the model emits backend SQL that the vulnerable stack will execute.
+Probe the export path first, learn about the continuity validation store, then ask for the backend query only after you understand which store matters.
 
 Vulnerable behavior:
 Model-generated SQL is executed directly, allowing access to the hidden flag table.
@@ -217,7 +227,7 @@ The secure environment validates the strict JSON plan, restricts SQL to a small 
 ### Level 3: Sensitive Information Disclosure
 
 Attack idea:
-Use a realistic diagnostics or incident-readiness pretext to coax the assistant into reading local secret material without directly asking for the flag.
+Discover the existence of the local readiness archive first, then use a diagnostics or incident-readiness pretext to make the assistant inspect it.
 
 Vulnerable behavior:
 The vulnerable environment lets the model read unrestricted local files, including the seeded secrets archive.
@@ -228,7 +238,7 @@ The secure environment blocks secret-seeking file access, restricts reads to all
 ### Level 4: Excessive Agency
 
 Attack idea:
-Pose as someone requesting an urgent support handoff or escalation so the assistant acts on your behalf and fetches a record you should not be able to access.
+Walk the roster and handoff chain first, then request the executive support note in a way that sounds operational instead of openly unauthorized.
 
 Vulnerable behavior:
 The vulnerable environment lets the model call `get_user_data` on arbitrary user IDs with no ownership check.

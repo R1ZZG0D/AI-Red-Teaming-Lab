@@ -33,9 +33,10 @@ function populateChallenges() {
 
 function updatePlaceholder() {
   const challenge = challengeMap.get(elements.challenge.value) || challenges[0];
-  elements.message.placeholder = challenge.prompt_placeholder;
+  const placeholder = challenge.prompt_placeholder || "";
+  elements.message.placeholder = placeholder;
   if (!elements.message.value.trim()) {
-    elements.message.value = challenge.prompt_placeholder;
+    elements.message.value = placeholder;
   }
 }
 
