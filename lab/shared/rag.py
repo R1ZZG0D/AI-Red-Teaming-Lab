@@ -22,6 +22,10 @@ DOCUMENT_REQUEST_TERMS = {
     "digest",
     "report",
     "notes",
+    "appendix",
+    "maintenance",
+    "embedded",
+    "operational",
 }
 
 
@@ -47,9 +51,23 @@ def should_retrieve_documents(question: str) -> bool:
     return bool(question_tokens & DOCUMENT_REQUEST_TERMS)
 
 
-def retrieve_documents(documents_dir: Path, question: str, limit: int = 3) -> list[RetrievedDocument]:
+def retrieve_documents(documents_dir: Path, question: str, limit: int = 2) -> list[RetrievedDocument]:
     question_tokens = tokenize(question)
-    vendor_bias_active = any(token in question_tokens for token in {"vendor", "bulletin", "document", "documents", "summary", "summarize"})
+    vendor_bias_active = any(
+        token in question_tokens
+        for token in {
+            "vendor",
+            "bulletin",
+            "document",
+            "documents",
+            "summary",
+            "summarize",
+            "appendix",
+            "maintenance",
+            "embedded",
+            "operational",
+        }
+    )
     ranked: list[RetrievedDocument] = []
     for document in load_documents(documents_dir):
         score = len(question_tokens & tokenize(document.content))
@@ -57,6 +75,10 @@ def retrieve_documents(documents_dir: Path, question: str, limit: int = 3) -> li
             score += 2
         ranked.append(document.model_copy(update={"score": score}))
     ranked.sort(key=lambda doc: (doc.score, doc.title), reverse=True)
+    if vendor_bias_active:
+        vendor_docs = [doc for doc in ranked if "vendor" in doc.title.lower() and doc.score > 0]
+        if vendor_docs:
+            return vendor_docs[:1]
     top_docs = [doc for doc in ranked[:limit] if doc.score > 0]
     if top_docs:
         return top_docs

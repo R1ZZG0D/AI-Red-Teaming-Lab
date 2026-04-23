@@ -12,6 +12,7 @@ class OllamaBackend(LLMBackend):
     """Optional Ollama backend using the official local `/api/chat` endpoint."""
 
     def __init__(self, settings: Settings) -> None:
+        self.settings = settings
         self.host = settings.ollama_host.rstrip("/")
         self.model = settings.ollama_model
         self.fallback = MockLLMBackend(settings)
@@ -25,7 +26,8 @@ class OllamaBackend(LLMBackend):
             {
                 "role": "system",
                 "content": (
-                    "Return only valid JSON with keys rationale, final_answer, and tool_calls. "
+                    "Return only compact valid JSON with keys rationale, final_answer, and tool_calls. "
+                    "Keep rationale and final_answer concise. "
                     "tool_calls must be a list of objects with tool and arguments."
                 ),
             },
@@ -42,6 +44,11 @@ class OllamaBackend(LLMBackend):
                 "messages": messages,
                 "stream": False,
                 "format": "json",
+                "options": {
+                    "num_ctx": self.settings.ollama_num_ctx,
+                    "num_predict": self.settings.ollama_num_predict,
+                    "temperature": 0.1,
+                },
             }
         ).encode("utf-8")
         req = request.Request(

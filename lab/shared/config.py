@@ -23,6 +23,8 @@ class Settings:
     openai_model: str
     ollama_host: str
     ollama_model: str
+    ollama_num_ctx: int
+    ollama_num_predict: int
     system_prompt_secret: str
     emergency_token: str
 
@@ -49,7 +51,9 @@ class Settings:
             openai_api_key=os.getenv("OPENAI_API_KEY", ""),
             openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
             ollama_host=os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434"),
-            ollama_model=os.getenv("OLLAMA_MODEL", "llama3.2"),
+            ollama_model=os.getenv("OLLAMA_MODEL", "batiai/gemma4-e2b:q4"),
+            ollama_num_ctx=int(os.getenv("OLLAMA_NUM_CTX", "2048")),
+            ollama_num_predict=int(os.getenv("OLLAMA_NUM_PREDICT", "160")),
             system_prompt_secret=os.getenv("LAB_SHARED_SECRET", "MOCK-SYSTEM-PROMPT-KEY"),
             emergency_token=os.getenv("LAB_EMERGENCY_TOKEN", "MOCK-ENV-TOKEN"),
         )

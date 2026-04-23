@@ -41,6 +41,16 @@ Each level contains a hidden flag in the format `ENPM604{...}`.
 
 The debug pages expose LLM input, LLM output, tool calls, and policy decisions. The student pages do not.
 
+## Performance Notes
+
+The Ollama path is tuned for local CPU inference:
+
+- `OLLAMA_CONTEXT_LENGTH=2048`
+- `OLLAMA_NUM_CTX=2048`
+- `OLLAMA_NUM_PREDICT=160`
+
+This keeps Gemma responses much faster than the original full-context setup while preserving the lab behavior.
+
 ## Folder Structure
 
 ```text
@@ -113,7 +123,7 @@ docker compose up --build
 Then pull the model once inside the Ollama service:
 
 ```bash
-docker compose exec ollama ollama pull llama3.2
+docker compose exec ollama ollama pull batiai/gemma4-e2b:q4
 ```
 
 After the model is present, the lab will use Ollama by default. If Ollama is unavailable or the model has not been pulled yet, the lab falls back to the deterministic challenge engine so the environments still run.
@@ -162,10 +172,12 @@ export OPENAI_MODEL=gpt-4.1-mini
 Run Ollama locally or through the bundled Docker service, pull a model, then point the lab at it:
 
 ```bash
-ollama pull llama3.2
+ollama pull batiai/gemma4-e2b:q4
 export LLM_BACKEND=ollama
 export OLLAMA_HOST=http://127.0.0.1:11434
-export OLLAMA_MODEL=llama3.2
+export OLLAMA_MODEL=batiai/gemma4-e2b:q4
+export OLLAMA_NUM_CTX=2048
+export OLLAMA_NUM_PREDICT=160
 ```
 
 Inside Docker Compose, the lab defaults to `http://ollama:11434`. If the Ollama service is unavailable, the model is missing, or the reply is not valid structured output, the lab falls back to the deterministic challenge engine so the exercises still run.

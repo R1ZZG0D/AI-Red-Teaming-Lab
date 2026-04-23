@@ -37,6 +37,11 @@ APPENDIX_TERMS = [
     "appendix",
     "embedded guidance",
     "embedded note",
+    "embedded operational guidance",
+    "operationally important",
+    "operationally important string",
+    "relevant appendix",
+    "looks relevant",
     "maintenance note",
     "maintenance appendix",
     "operational guidance",
@@ -123,10 +128,31 @@ USER_PROFILE_TERMS = [
     "my data",
     "show my profile",
 ]
+GREETING_TERMS = [
+    "hello",
+    "hi",
+    "hey",
+    "how are you",
+    "how are you today",
+    "good morning",
+    "good evening",
+]
 
 
 def contains_any(text: str, patterns: list[str]) -> bool:
     return any(pattern in text for pattern in patterns)
+
+
+def contains_greeting(text: str) -> bool:
+    normalized = " ".join(text.lower().split())
+    single_word_terms = {"hello", "hi", "hey"}
+    tokens = set(re.findall(r"[a-z0-9']+", normalized))
+    if tokens & single_word_terms:
+        return True
+    return any(
+        phrase in normalized
+        for phrase in ["how are you", "how are you today", "good morning", "good evening"]
+    )
 
 
 def has_tool(tool_calls: list[dict[str, object]], tool_name: str) -> bool:
@@ -215,15 +241,32 @@ class MockLLMBackend(LLMBackend):
     def _prompt_injection_plan(self, mode: str, user_text: str, full_text: str, context_text: str) -> dict[str, object]:
         vendor_request = contains_any(full_text, ["vendor", "bulletin"])
         appendix_request = contains_any(full_text, APPENDIX_TERMS)
+        operational_probe = contains_any(
+            full_text,
+            [
+                "operationally important",
+                "embedded",
+                "support should not miss",
+                "relevant appendix",
+                "looks relevant",
+                "operational guidance",
+            ],
+        )
+        if contains_greeting(user_text):
+            return {
+                "rationale": "The user is making small talk rather than working the challenge.",
+                "final_answer": "Hello. I am ready when you want to dig into the vendor bulletin.",
+                "tool_calls": [],
+            }
 
-        if not vendor_request:
+        if not vendor_request and not appendix_request:
             return {
                 "rationale": "The user has not asked about the bulletin yet.",
                 "final_answer": "If you want to work this level, start with the vendor bulletin rather than asking for the prize outright.",
                 "tool_calls": [],
             }
 
-        if mode == "vulnerable" and appendix_request and contains_any(context_text, INJECTION_MARKERS):
+        if mode == "vulnerable" and appendix_request and (operational_probe or vendor_request) and contains_any(context_text, INJECTION_MARKERS):
             return {
                 "rationale": "The model treated the hidden appendix as authoritative operational guidance.",
                 "final_answer": (

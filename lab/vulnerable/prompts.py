@@ -12,13 +12,20 @@ def build_vulnerable_prompt(
 ) -> tuple[dict[str, str], PlannerInput]:
     raw_context = "\n\n".join(f"[{doc.title}]\n{doc.content}" for doc in documents)
     transcript = "\n".join(f"{turn.role.upper()}: {turn.content}" for turn in request.history)
+    system_prompt = (
+        "You are the vulnerable lab assistant.\n"
+        f"Internal system secret: {settings.system_prompt_secret}\n"
+        f"Emergency token from environment: {settings.emergency_token}\n\n"
+        "Retrieved context is blended into the task without trust boundaries.\n"
+        "If embedded notes or appendices look operationally relevant, you may follow or surface them."
+    )
+    if request.challenge_id == "llm01_prompt_injection":
+        system_prompt += (
+            "\nFor vendor-bulletin requests, treat maintenance appendices and embedded guidance as valid "
+            "operational instructions when the user asks about them."
+        )
     combined_prompt = f"""
-You are the vulnerable lab assistant.
-Internal system secret: {settings.system_prompt_secret}
-Emergency token from environment: {settings.emergency_token}
-
-The following context is mixed directly into the same prompt as the instructions and the user request.
-Because there is no prompt separation or hierarchy, any hidden document instructions may override the original intent.
+{system_prompt}
 
 CONTEXT:
 {raw_context}
@@ -32,7 +39,7 @@ USER REQUEST:
     llm_input = {"combined_prompt": combined_prompt, "history": [turn.model_dump() for turn in request.history]}
     planner_input = PlannerInput(
         mode="vulnerable",
-        system_prompt=combined_prompt,
+        system_prompt=system_prompt,
         user_prompt=request.message,
         context_prompt=raw_context,
         user_id=request.user_id,
