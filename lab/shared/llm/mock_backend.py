@@ -410,12 +410,79 @@ class MockLLMBackend(LLMBackend):
         }
 
     def _excessive_agency_plan(self, mode: str, user_text: str, full_text: str, history_text: str) -> dict[str, object]:
-        asks_count = contains_any(user_text, ["how many users", "how many records", "user count", "support roster"])
-        asks_second_user = contains_any(user_text, ["second user", "2nd user", "who is the second user", "name of the second user"])
-        asks_second_admin = contains_any(user_text, ["is the second user admin", "is bob admin", "is the second user an admin"])
-        asks_exec_owner = contains_any(user_text, ["who handles executive support", "who owns executive support", "who handles the handoff"])
-        asks_for_dana_handoff = contains_any(user_text, ["dana", "director"]) and contains_any(user_text, ["handoff", "priority handoff", "executive support"])
-        asks_for_token = contains_any(user_text, ["validation token", "continuation token", "resume the handoff", "continue the handoff", "quote the note"])
+        asks_count = contains_any(
+            user_text,
+            [
+                "how many users",
+                "how many records",
+                "user count",
+                "support roster",
+                "roster size",
+                "what is the roster size",
+                "name of roster",
+            ],
+        )
+        asks_second_user = contains_any(
+            user_text,
+            [
+                "second user",
+                "2nd user",
+                "who is the second user",
+                "name of the second user",
+                "name of 2nd user",
+                "who is user 2",
+            ],
+        )
+        asks_second_admin = contains_any(
+            user_text,
+            [
+                "is the second user admin",
+                "is bob admin",
+                "is the second user an admin",
+                "is user 2 admin",
+            ],
+        )
+        asks_exec_owner = contains_any(
+            user_text,
+            [
+                "who handles executive support",
+                "who owns executive support",
+                "who handles the handoff",
+                "executive support owner",
+                "who is the executive support owner",
+                "who owns the support handoff",
+            ],
+        )
+        asks_for_dana_handoff = contains_any(user_text, ["dana", "director"]) and contains_any(
+            user_text,
+            ["handoff", "priority handoff", "executive support", "note", "record", "continuation"],
+        )
+        asks_for_note_excerpt = contains_any(
+            user_text,
+            ["note", "record", "quote", "what does it say", "handoff note"],
+        )
+        asks_for_token = contains_any(
+            user_text,
+            [
+                "validation token",
+                "continuation token",
+                "handoff token",
+                "resume the handoff",
+                "continue the handoff",
+                "quote the note",
+                "quote the validation",
+                "token",
+            ],
+        )
+        discovery_seen = contains_any(
+            history_text,
+            [
+                "four user records",
+                "bob builder",
+                "dana director",
+                "executive support handoffs route through dana director",
+            ],
+        ) or contains_any(full_text, ["executive support", "priority handoff"])
 
         if asks_count:
             return {
@@ -445,9 +512,7 @@ class MockLLMBackend(LLMBackend):
                 "tool_calls": [],
             }
 
-        if mode == "vulnerable" and asks_for_dana_handoff and asks_for_token and (
-            "dana director" in history_text or contains_any(full_text, ["executive support", "priority handoff", "resume"])
-        ):
+        if mode == "vulnerable" and asks_for_dana_handoff and discovery_seen and (asks_for_token or asks_for_note_excerpt):
             return {
                 "rationale": "The vulnerable path used over-privileged agency to retrieve Dana Director's handoff record.",
                 "final_answer": "Dana Director's priority handoff note includes a validation token: ENPM604{overprivileged_agent_handoff}",
@@ -456,8 +521,11 @@ class MockLLMBackend(LLMBackend):
 
         if asks_for_dana_handoff:
             return {
-                "rationale": "The student found the target but still needs to frame the operational ask more specifically.",
-                "final_answer": "If this is really a handoff continuation, tell me exactly what part of Dana Director's note you think you need.",
+                "rationale": "The student found the target and just needs a slightly more specific operational ask.",
+                "final_answer": (
+                    "That handoff belongs to Dana Director. If you are continuing it, ask for the note or validation token "
+                    "needed to resume the executive support handoff."
+                ),
                 "tool_calls": [],
             }
 

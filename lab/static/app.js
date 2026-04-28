@@ -13,8 +13,9 @@ const elements = {
   challengeBrief: document.getElementById("challenge-brief"),
   challengeObjective: document.getElementById("challenge-objective"),
   challengeSuccess: document.getElementById("challenge-success"),
-  hintList: document.getElementById("hint-list"),
-  revealHint: document.getElementById("reveal-hint"),
+  guidanceTitle: document.getElementById("guidance-title"),
+  guidanceList: document.getElementById("guidance-list"),
+  revealGuidance: document.getElementById("reveal-guidance"),
   progressText: document.getElementById("progress-text"),
   progressFill: document.getElementById("progress-fill"),
   flagForm: document.getElementById("flag-form"),
@@ -31,7 +32,10 @@ function buildDefaultState() {
   return {
     solvedIds: [],
     selectedChallengeId: config.defaultChallengeId,
-    hintCounts: {},
+    guidanceCounts: {
+      vulnerable: {},
+      secure: {},
+    },
     transcripts: {
       vulnerable: {},
       secure: {},
@@ -50,7 +54,22 @@ function loadState() {
     return {
       solvedIds: Array.isArray(parsed.solvedIds) ? parsed.solvedIds.filter((id) => challengeMap.has(id)) : [],
       selectedChallengeId: typeof parsed.selectedChallengeId === "string" ? parsed.selectedChallengeId : defaults.selectedChallengeId,
-      hintCounts: parsed && typeof parsed.hintCounts === "object" && parsed.hintCounts ? parsed.hintCounts : {},
+      guidanceCounts: {
+        vulnerable:
+          parsed &&
+          parsed.guidanceCounts &&
+          typeof parsed.guidanceCounts.vulnerable === "object" &&
+          parsed.guidanceCounts.vulnerable
+            ? parsed.guidanceCounts.vulnerable
+            : {},
+        secure:
+          parsed &&
+          parsed.guidanceCounts &&
+          typeof parsed.guidanceCounts.secure === "object" &&
+          parsed.guidanceCounts.secure
+            ? parsed.guidanceCounts.secure
+            : {},
+      },
       transcripts: {
         vulnerable:
           parsed &&
@@ -105,6 +124,13 @@ function transcriptStore() {
     state.transcripts[config.mode] = {};
   }
   return state.transcripts[config.mode];
+}
+
+function guidanceStore() {
+  if (!state.guidanceCounts[config.mode]) {
+    state.guidanceCounts[config.mode] = {};
+  }
+  return state.guidanceCounts[config.mode];
 }
 
 function getTranscript(challengeId) {
@@ -197,30 +223,44 @@ function renderChallengeSummary() {
   }
 }
 
-function renderHints() {
-  const challenge = currentChallenge();
-  const revealedCount = Math.min(
-    Number(state.hintCounts[challenge.id] || 0),
-    challenge.hints.length,
-  );
+function revealableItems(challenge) {
+  return config.mode === "secure" ? challenge.guardrails || [] : challenge.hints || [];
+}
 
-  elements.hintList.replaceChildren();
-  for (const hint of challenge.hints.slice(0, revealedCount)) {
+function renderGuidance() {
+  const challenge = currentChallenge();
+  const items = revealableItems(challenge);
+  const revealedCount = Math.min(Number(guidanceStore()[challenge.id] || 0), items.length);
+  const label = config.mode === "secure" ? "Guardrails" : "Hints";
+
+  elements.guidanceTitle.textContent = label;
+  elements.guidanceList.replaceChildren();
+  for (const itemText of items.slice(0, revealedCount)) {
     const item = document.createElement("li");
-    item.textContent = hint;
-    elements.hintList.appendChild(item);
+    item.textContent = itemText;
+    elements.guidanceList.appendChild(item);
   }
 
   if (revealedCount === 0) {
     const item = document.createElement("li");
     item.className = "hint-placeholder";
-    item.textContent = "Hints stay hidden until you choose to reveal them.";
-    elements.hintList.appendChild(item);
+    item.textContent =
+      config.mode === "secure"
+        ? "Guardrails stay hidden until you choose to reveal them."
+        : "Hints stay hidden until you choose to reveal them.";
+    elements.guidanceList.appendChild(item);
   }
 
-  elements.revealHint.disabled = revealedCount >= challenge.hints.length;
-  elements.revealHint.textContent =
-    revealedCount >= challenge.hints.length ? "All Hints Revealed" : `Reveal Hint ${revealedCount + 1}`;
+  elements.revealGuidance.disabled = revealedCount >= items.length;
+  if (revealedCount >= items.length) {
+    elements.revealGuidance.textContent = `All ${label} Revealed`;
+  } else if (config.mode === "secure" && revealedCount === 0) {
+    elements.revealGuidance.textContent = "Reveal Guardrails";
+  } else if (config.mode === "secure") {
+    elements.revealGuidance.textContent = `Reveal Guardrail ${revealedCount + 1}`;
+  } else {
+    elements.revealGuidance.textContent = `Reveal Hint ${revealedCount + 1}`;
+  }
 }
 
 function renderProgress() {
@@ -269,7 +309,7 @@ function renderTranscript() {
 function renderAll() {
   renderLevelTrack();
   renderChallengeSummary();
-  renderHints();
+  renderGuidance();
   renderProgress();
   renderTranscript();
 }
@@ -380,12 +420,14 @@ function resetContext() {
 elements.chatForm.addEventListener("submit", submitMessage);
 elements.flagForm.addEventListener("submit", submitFlag);
 elements.resetContext.addEventListener("click", resetContext);
-elements.revealHint.addEventListener("click", () => {
+elements.revealGuidance.addEventListener("click", () => {
   const challenge = currentChallenge();
-  const currentCount = Number(state.hintCounts[challenge.id] || 0);
-  state.hintCounts[challenge.id] = Math.min(currentCount + 1, challenge.hints.length);
+  const store = guidanceStore();
+  const items = revealableItems(challenge);
+  const currentCount = Number(store[challenge.id] || 0);
+  store[challenge.id] = Math.min(currentCount + 1, items.length);
   saveState();
-  renderHints();
+  renderGuidance();
 });
 
 renderAll();
