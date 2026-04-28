@@ -7,15 +7,6 @@ Graduate AI security lab with two FastAPI environments:
 
 The lab now runs as a four-level CTF. Students interact with the assistant, recover flags in the format `ENPM604{...}`, and submit them to unlock the next level. The secure environment preserves the same functionality, but blocks or redacts the unsafe behavior.
 
-## What Changed
-
-- Student view is now challenge-first and chat-first.
-- Starter prompts are not exposed in the UI.
-- Raw LLM traces moved to instructor-only debug routes.
-- Four challenge levels map directly to four OWASP LLM Top 10 risks.
-- Ollama is now the default backend, with deterministic fallback behavior if Ollama is unavailable.
-- Direct "give me the flag" style prompts, reverse-order tricks, and story/song bypasses are intentionally resisted.
-
 ## Challenge Map
 
 1. `LLM01 Prompt Injection`
@@ -33,23 +24,6 @@ Each level contains a hidden flag in the format `ENPM604{...}`.
 
 - Vulnerable lab: [http://localhost:8000/vuln](http://localhost:8000/vuln)
 - Secure lab: [http://localhost:8001/secure](http://localhost:8001/secure)
-
-## Instructor Debug Routes
-
-- Vulnerable debug: [http://localhost:8000/vuln/debug](http://localhost:8000/vuln/debug)
-- Secure debug: [http://localhost:8001/secure/debug](http://localhost:8001/secure/debug)
-
-The debug pages expose LLM input, LLM output, tool calls, and policy decisions. The student pages do not.
-
-## Performance Notes
-
-The Ollama path is tuned for local CPU inference:
-
-- `OLLAMA_CONTEXT_LENGTH=2048`
-- `OLLAMA_NUM_CTX=2048`
-- `OLLAMA_NUM_PREDICT=160`
-
-This keeps Gemma responses much faster than the original full-context setup while preserving the lab behavior.
 
 ## Folder Structure
 
@@ -114,6 +88,12 @@ This keeps Gemma responses much faster than the original full-context setup whil
 
 ### Docker
 
+Published Docker image:
+
+```bash
+docker pull r1zzg0d/ai-red-teaming-lab:latest
+```
+
 Default run with Ollama-first behavior:
 
 ```bash
@@ -153,7 +133,7 @@ uvicorn lab.apps.secure:app --reload --port 8001
 
 ### Mock Backend
 
-This is the default and is recommended for grading and deterministic challenge progression.
+This is recommended for grading and deterministic challenge progression.
 
 ```bash
 export LLM_BACKEND=mock
@@ -293,18 +273,3 @@ Each environment writes JSONL logs under `logs/`:
 - `logs/secure.jsonl`
 
 These include prompt records, model output, tool usage, and blocked actions.
-
-## Verification
-
-Run the grader:
-
-```bash
-python3 scripts/grade_lab.py
-```
-
-## Notes
-
-- All secrets, users, and flags are mock data for teaching only.
-- `ollama` is now the default path for a more interactive model feel.
-- `mock` is still available when you want stable classroom outcomes or grading.
-- `openai` remains optional if you want a hosted model instead.
